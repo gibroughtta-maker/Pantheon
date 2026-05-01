@@ -1,0 +1,16 @@
+schema_version: "1.0"
+persona: confucius
+notes: |
+  Curated representative excerpts from 论语 (the Analects). For full text
+  ingestion, run `pantheon corpus fetch confucius` (M3) which pulls
+  Public Domain editions from the URLs below.
+
+sources:
+  - path: lunyu.txt
+    source: "论语 (Analects), curated representative excerpts"
+    license: Public Domain
+    language: zh-classical
+    upstream:
+      - https://ctext.org/analects
+      - https://github.com/zhTW/lunyu
+    sha256: ""  # populated by `pantheon corpus verify`

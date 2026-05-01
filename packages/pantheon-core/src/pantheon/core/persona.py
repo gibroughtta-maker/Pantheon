@@ -11,6 +11,12 @@ from pathlib import Path
 import yaml
 
 from pantheon.memory.corpus import CorpusStore, NullCorpusStore
+from pantheon.memory.embedded_corpus import (
+    Embedder,
+    EmbeddedCorpusStore,
+    HashEmbedder,
+    load_corpus_for_persona,
+)
 from pantheon.types.persona import PersonaSpec
 
 
@@ -47,15 +53,33 @@ def _resolve_prompt(spec_dir: Path, raw: dict) -> str:
     return ""
 
 
-def load_persona(path: str | Path) -> Persona:
+def load_persona(
+    path: str | Path,
+    *,
+    embedder: Embedder | None = None,
+) -> Persona:
     """Load a single persona from a YAML file. The system prompt may live in
-    a sibling file referenced by `system_prompt_file`."""
+    a sibling file referenced by `system_prompt_file`. If the persona's
+    corpus directory exists and contains files, an `EmbeddedCorpusStore` is
+    built; otherwise a `NullCorpusStore` is used.
+
+    `embedder` defaults to `HashEmbedder` (deterministic, no deps) at load
+    time so simply importing personas never blocks on a model download.
+    Calibration code can swap in a real embedder explicitly.
+    """
     p = Path(path)
     raw = yaml.safe_load(p.read_text(encoding="utf-8"))
     raw["system_prompt"] = _resolve_prompt(p.parent, raw)
     spec = PersonaSpec.model_validate(raw)
-    # M0: corpus is null. M1 will swap in a real backend if `corpus.sources` is non-empty.
-    corpus = NullCorpusStore(persona_id=spec.id)
+
+    corpus_dir = p.parent / "corpus"
+    corpus: CorpusStore
+    if corpus_dir.exists() and any(corpus_dir.iterdir()):
+        corpus = load_corpus_for_persona(
+            spec.id, corpus_dir, embedder=embedder or HashEmbedder()
+        )
+    else:
+        corpus = NullCorpusStore(persona_id=spec.id)
     return Persona(spec=spec, corpus=corpus)
 
 

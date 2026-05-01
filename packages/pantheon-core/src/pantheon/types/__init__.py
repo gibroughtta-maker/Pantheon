@@ -9,8 +9,10 @@ from pantheon.types.events import (
 )
 from pantheon.types.persona import (
     AuditMetadata,
+    CalibrationMetadata,
     CorpusConfig,
     DebateStyle,
+    ManualOverride,
     ModelPreference,
     PersonaSpec,
     Personality,
@@ -32,6 +34,7 @@ from pantheon.types.verdict import (
 __all__ = [
     "ActionItem",
     "AuditMetadata",
+    "CalibrationMetadata",
     "Claim",
     "ClaimType",
     "ConsensusPoint",
@@ -39,6 +42,7 @@ __all__ = [
     "CostBreakdown",
     "DebateEvent",
     "DebateStyle",
+    "ManualOverride",
     "MinorityPoint",
     "ModelPreference",
     "PersonaSpec",

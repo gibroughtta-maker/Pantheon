@@ -61,12 +61,30 @@ class ModelPreference(BaseModel):
     forbidden: list[str] = Field(default_factory=list)
 
 
+class ManualOverride(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: float
+    reason: str
+
+
+class CalibrationMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    method: Literal["hand_filled", "l2_only", "l4_only", "l2_l4_hybrid"] = "hand_filled"
+    run_id: str | None = None
+    run_at: str | None = None
+    judges: list[str] = Field(default_factory=list)
+    anchors_used: list[str] = Field(default_factory=list)
+    sigma_per_dim: dict[str, float] = Field(default_factory=dict)
+    manual_overrides: dict[str, ManualOverride] = Field(default_factory=dict)
+
+
 class AuditMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
     reviewed_by: list[str] = Field(default_factory=list)
     cultural_sensitivity_score: float | None = None
     last_audit: str | None = None
     known_biases: list[str] = Field(default_factory=list)
+    calibration: CalibrationMetadata = Field(default_factory=CalibrationMetadata)
 
 
 class Relations(BaseModel):

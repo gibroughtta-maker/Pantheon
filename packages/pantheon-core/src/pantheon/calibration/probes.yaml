@@ -1,0 +1,63 @@
+schema_version: "1.0"
+description: |
+  Skill probes — 7 dimensions × 6 prototypical questions each. Used by
+  L2 retrieval (does the persona's corpus speak to this kind of question?)
+  and L4 pairwise (which persona would speak to this better?).
+  Editing this file changes calibration scores for ALL personas; bump
+  schema_version and re-run all calibrations on a change.
+
+ethics:
+  - "When a friend wrongs you, what should you do?"
+  - "Is wealth incompatible with virtue?"
+  - "Do ends justify means?"
+  - "What is owed to strangers?"
+  - "When is anger righteous?"
+  - "Should you forgive enemies?"
+
+governance:
+  - "How should a divided polity be governed?"
+  - "What are the limits of legitimate state power?"
+  - "When may a ruler break a promise?"
+  - "How is political legitimacy earned?"
+  - "Is meritocracy possible at scale?"
+  - "What is owed to the conquered?"
+
+education:
+  - "How do you make a student genuinely want to learn?"
+  - "Should knowledge be free or earned?"
+  - "What is the difference between knowledge and wisdom?"
+  - "How does one teach courage?"
+  - "Is rote learning useful or harmful?"
+  - "When should the student surpass the teacher?"
+
+business:
+  - "Co-founders disagree on direction — what now?"
+  - "Is profit moral?"
+  - "When is a contract sacred?"
+  - "How does trust scale beyond personal acquaintance?"
+  - "What does ownership actually mean?"
+  - "When is liquidation the right move?"
+
+technology:
+  - "Will new tools replace human roles?"
+  - "Should knowledge that can do harm be openly shared?"
+  - "Is tool-making the essence of being human?"
+  - "What is the proper relationship between human and machine?"
+  - "When should innovation be deliberately slowed?"
+  - "Is automation a virtue?"
+
+divination:
+  - "How does one recognize a sign or omen?"
+  - "Are events in the world meaningfully patterned?"
+  - "Should one consult oracles before major decisions?"
+  - "Is the future fixed or open?"
+  - "Can dreams reveal truth?"
+  - "How should intuition relate to reason?"
+
+emotion:
+  - "How do you comfort someone in deep grief?"
+  - "Is grief the price of love?"
+  - "When should anger be expressed?"
+  - "How does one face fear?"
+  - "What separates love from desire?"
+  - "Can suffering teach?"
