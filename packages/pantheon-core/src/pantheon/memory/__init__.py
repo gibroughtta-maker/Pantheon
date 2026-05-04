@@ -12,6 +12,7 @@ from pantheon.memory.embedded_corpus import (
     load_corpus_for_persona,
 )
 from pantheon.memory.episodic import EpisodicStore, NullEpisodicStore
+from pantheon.memory.sqlite_episodic import SqliteEpisodicStore
 from pantheon.memory.working import Message, WorkingMemory
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "NullEpisodicStore",
     "RetrievalHit",
     "SentenceTransformerEmbedder",
+    "SqliteEpisodicStore",
     "WorkingMemory",
     "default_embedder",
     "load_corpus_for_persona",

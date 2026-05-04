@@ -6,7 +6,10 @@ swap models freely.
 """
 from pantheon.gateway.base import CallResult, Gateway, GatewayError
 from pantheon.gateway.mock import MockGateway, ScriptedReply
+from pantheon.gateway.nim import NimGateway
 from pantheon.gateway.openai_compat import OpenAICompatibleGateway
+from pantheon.gateway.openclaw import OpenClawGateway
+from pantheon.gateway.rate_limit import RateLimiter, default_rate_limiter
 from pantheon.gateway.replay import ReplayGateway
 
 __all__ = [
@@ -14,7 +17,11 @@ __all__ = [
     "Gateway",
     "GatewayError",
     "MockGateway",
+    "NimGateway",
     "OpenAICompatibleGateway",
+    "OpenClawGateway",
+    "RateLimiter",
     "ReplayGateway",
     "ScriptedReply",
+    "default_rate_limiter",
 ]

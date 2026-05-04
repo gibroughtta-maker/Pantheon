@@ -6,8 +6,12 @@ from pantheon.core.persona import Persona, load_persona, load_personas_dir, regi
 from pantheon.core.weights import compute_weights
 from pantheon.gateway.base import CallResult, Gateway, GatewayError
 from pantheon.gateway.mock import MockGateway, ScriptedReply
+from pantheon.gateway.nim import NimGateway
 from pantheon.gateway.openai_compat import OpenAICompatibleGateway
+from pantheon.gateway.openclaw import OpenClawGateway
+from pantheon.gateway.rate_limit import RateLimiter, default_rate_limiter
 from pantheon.gateway.replay import ReplayGateway
+from pantheon.memory.sqlite_episodic import SqliteEpisodicStore
 from pantheon.obs.budget import BudgetExceeded, BudgetGuard
 from pantheon.types.persona import PersonaSpec
 from pantheon.types.verdict import Verdict
@@ -23,13 +27,18 @@ __all__ = [
     "GatewayError",
     "MockGateway",
     "Model",
+    "NimGateway",
     "OpenAICompatibleGateway",
+    "OpenClawGateway",
     "Pantheon",
     "Persona",
     "PersonaSpec",
+    "RateLimiter",
     "ReplayGateway",
     "ScriptedReply",
+    "SqliteEpisodicStore",
     "Verdict",
+    "default_rate_limiter",
     "compute_weights",
     "load_persona",
     "load_personas_dir",

@@ -296,6 +296,72 @@ class Session:
                 completion_tokens=result.completion_tokens,
             )
 
+    async def _summon_devil_advocate(self, ctx: PhaseContext) -> None:
+        """Spawn the Devil's Advocate for one turn during synthesis.
+
+        The advocate is **not** seated, gets a single speech recorded as
+        a SystemEvent (role='moderator' with a clear marker prefix), and
+        contributes one Claim to the evidence ledger so Oracle can see
+        whether the seated personas engaged with it. Cost is accounted
+        but not budget-checked beyond the standard guard.
+        """
+        from pantheon.roles.devil_advocate import DevilsAdvocate
+
+        await self._emit(
+            SystemEvent(
+                session_id=self.session_id,
+                seq=0,
+                role="moderator",
+                message="Soft consensus detected — summoning Devil's Advocate.",
+            )
+        )
+        # Use the strongest model among seated agents; fall back to the
+        # gateway of seat 1.
+        gateway = self.agents[0].model.gateway
+        seat_labels = {a.seat: a.label for a in self.agents}
+        try:
+            self.budget.check()
+            da = DevilsAdvocate()
+            text = await da.challenge(
+                gateway,
+                seated_transcripts=ctx.transcripts,
+                agents_label=seat_labels,
+                question=self.question,
+                seed=self.seed,
+            )
+        except Exception as e:  # noqa: BLE001 — DA failure must not break the debate
+            await self._emit(
+                SystemEvent(
+                    session_id=self.session_id,
+                    seq=0,
+                    role="framework",
+                    message=f"Devil's Advocate failed ({e!r}); continuing without it.",
+                )
+            )
+            return
+
+        # Add a Claim so Oracle/Auditor see the challenge in the evidence ledger.
+        from pantheon.types.verdict import Claim
+
+        ctx.claims.append(
+            Claim(
+                claim_id=f"da{len(ctx.claims) + 1}",
+                speaker="devil_advocate",
+                text=text[:500],
+                type="speculation",
+                grounding_score=0.5,
+                grounding_tag="no_corpus",
+            )
+        )
+        await self._emit(
+            SystemEvent(
+                session_id=self.session_id,
+                seq=0,
+                role="moderator",
+                message=f"[Devil's Advocate] {text}",
+            )
+        )
+
     async def _run(self) -> None:
         self._started_at = time.monotonic()
         ctx = PhaseContext(
@@ -327,20 +393,10 @@ class Session:
                         message=summary,
                     )
                 )
-                if self.moderator.soft_consensus(ctx):
+                if self.moderator.soft_consensus(ctx) and not self._devil_advocate_invoked:
                     soft = True
-                    self._devil_advocate_invoked = True  # M1 will actually summon one
-                    await self._emit(
-                        SystemEvent(
-                            session_id=self.session_id,
-                            seq=0,  # set in _emit
-                            role="moderator",
-                            message=(
-                                "Soft consensus detected; in M1 a devil's advocate "
-                                "would be summoned here."
-                            ),
-                        )
-                    )
+                    self._devil_advocate_invoked = True
+                    await self._summon_devil_advocate(ctx)
                 await self._run_phase_strategy(SynthesisPhase(summary), ctx, "synthesis")
 
             await self._transition(Phase.VERDICT)
