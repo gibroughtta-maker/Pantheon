@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pantheon-bridges"
+version = "0.1.0a0"
+description = "Bridges from Pantheon debate events to Telegram / Obsidian / Discord."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Wendy" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pantheon-debate>=0.1.0a0",
+]
+
+[project.optional-dependencies]
+telegram = ["httpx>=0.27"]
+discord  = ["httpx>=0.27"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pantheon_bridges"]

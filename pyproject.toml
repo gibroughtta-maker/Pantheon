@@ -21,4 +21,6 @@ testpaths = [
     "packages/pantheon-core/tests",
     "packages/pantheon-pack-founders/tests",
     "packages/pantheon-mcp/tests",
+    "packages/pantheon-divination/tests",
+    "packages/pantheon-bridges/tests",
 ]

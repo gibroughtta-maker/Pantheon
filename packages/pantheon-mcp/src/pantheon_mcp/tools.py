@@ -245,14 +245,60 @@ async def handle(name: str, args: dict[str, Any], mgr: SessionManager) -> dict[s
         return json.loads(v.model_dump_json())
 
     if name == "cast_divination":
+        try:
+            import pantheon_divination as pd  # type: ignore[import-not-found]
+        except ImportError:
+            return {
+                "implemented": False,
+                "message": (
+                    "pantheon-divination is not installed. "
+                    "`pip install pantheon-divination` and ensure the MCP "
+                    "server's host process has called accept_disclaimer()."
+                ),
+                "method": args.get("method"),
+            }
+        method = args.get("method")
+        question = args.get("question") or ""
+        seed = int(args.get("seed", 0))
+        try:
+            if method == "iching":
+                result = pd.iching.cast(question=question, seed=seed)
+            elif method == "tarot":
+                spread = args.get("spread", "celtic_cross")
+                result = pd.tarot.cast(question=question, spread=spread, seed=seed)
+            elif method == "runes":
+                spread = args.get("spread", "three_rune")
+                result = pd.runes.cast(question=question, spread=spread, seed=seed)
+            elif method == "astrology":
+                result = pd.astrology.cast(question=question, seed=seed)
+            elif method == "ziwei":
+                result = pd.ziwei.cast(question=question, seed=seed)
+            else:
+                raise ValueError(f"unknown divination method: {method!r}")
+        except pd.DivinationUnavailable as e:
+            return {"implemented": True, "error": str(e), "method": method}
+
         return {
-            "implemented": False,
-            "message": (
-                "cast_divination is scheduled for M4 (pantheon-divination). "
-                "It will require explicit `import pantheon_divination` + "
-                "`accept_disclaimer()` in the host process."
-            ),
-            "method": args.get("method"),
+            "implemented": True,
+            "method": result.method,
+            "headline_zh": result.headline_zh,
+            "headline_en": result.headline_en,
+            "primary": result.primary,
+            "secondary": result.secondary,
+            "judgment": result.judgment,
+            "image": result.image,
+            "positions": [
+                {
+                    "position": ln.position,
+                    "text": ln.text,
+                    "is_changing": ln.is_changing,
+                    "is_reversed": ln.is_reversed,
+                    "extra": ln.extra,
+                }
+                for ln in result.lines
+            ],
+            "structured": result.structured,
+            "disclaimer": result.disclaimer,
         }
 
     if name == "list_personas":

@@ -73,9 +73,24 @@ async def test_audit_persona_returns_metadata(mgr):
 
 
 @pytest.mark.asyncio
-async def test_cast_divination_placeholder(mgr):
-    out = await handle("cast_divination", {"method": "iching", "question": "..."}, mgr)
-    assert out["implemented"] is False
+async def test_cast_divination_dispatches_real(mgr):
+    """When pantheon-divination is installed, cast_divination dispatches
+    into it. If accept_disclaimer() hasn't been called by the host
+    process, the tool surfaces a DivinationUnavailable error rather than
+    casting."""
+    import pantheon_divination as pd
+    pd.accept_disclaimer()
+
+    out = await handle(
+        "cast_divination",
+        {"method": "iching", "question": "Should I take the offer?", "seed": 7},
+        mgr,
+    )
+    assert out["implemented"] is True
+    assert out["method"] == "iching"
+    assert "headline_zh" in out
+    assert "positions" in out
+    assert len(out["positions"]) == 6
 
 
 @pytest.mark.asyncio
