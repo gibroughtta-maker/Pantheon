@@ -1,0 +1,70 @@
+schema_version: "1.0"
+persona: muhammad
+notes: |
+  This pack ships ZERO canonical text. Run `pantheon corpus fetch muhammad`
+  to download the public-domain sources listed below. The Arabic Quran is
+  the religious common ground and is fetched first; English and Chinese
+  translations are marked as "interpretations of meaning".
+
+sources:
+  - id: tanzil_quran_arabic
+    path: arabic/quran.txt
+    source: "Tanzil Quran — Arabic verbatim text"
+    license: "CC-BY 3.0 Unported"
+    language: ar
+    upstream:
+      - https://tanzil.net/download/
+    sha256: ""
+    max_size_kb: 1500
+    notes: "Religious original; not an 'interpretation'."
+
+  - id: yusuf_ali_quran
+    path: english/yusuf_ali.txt
+    source: "Quran translation by Abdullah Yusuf Ali (1934)"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/2800
+    sha256: ""
+    max_size_kb: 2500
+
+  - id: pickthall_quran
+    path: english/pickthall.txt
+    source: "The Meaning of the Glorious Koran by Marmaduke Pickthall (1930)"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/2810
+    sha256: ""
+    max_size_kb: 2000
+
+  - id: wang_jingzhai_quran
+    path: chinese/wang_jingzhai.txt
+    source: "Quran translation by 王静斋 (1932)"
+    license: "Public Domain (copyright expired)"
+    language: zh
+    upstream:
+      - https://archive.org/details/wangjingzhai-quran
+    sha256: ""
+    max_size_kb: 2500
+
+  - id: bukhari_english
+    path: hadith/bukhari.txt
+    source: "Sahih al-Bukhari — Muhsin Khan English translation"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://sunnah.com/bukhari
+      - https://sunnah.com/api
+    sha256: ""
+    max_size_kb: 4000
+
+  - id: muslim_english
+    path: hadith/muslim.txt
+    source: "Sahih Muslim — public-domain English translation"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://sunnah.com/muslim
+    sha256: ""
+    max_size_kb: 4000

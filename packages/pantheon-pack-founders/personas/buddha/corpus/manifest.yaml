@@ -1,0 +1,62 @@
+schema_version: "1.0"
+persona: buddha
+notes: |
+  This pack ships ZERO canonical text. Run `pantheon corpus fetch buddha`
+  to download. Pali Tipitaka + Chinese Agamas are fetched in parallel; the
+  L2 retrieval scorer treats cross-language matches as the strongest
+  grounding (the same teaching surviving in two transmission lines).
+
+sources:
+  - id: pali_canon_suttacentral
+    path: pali/sutta_central.txt
+    source: "SuttaCentral curated Pali Tipitaka — Digha/Majjhima/Samyutta/Anguttara + Dhammapada"
+    license: "CC0"
+    language: pi
+    upstream:
+      - https://suttacentral.net/
+      - https://github.com/suttacentral/sc-data
+    sha256: ""
+    max_size_kb: 6000
+
+  - id: thanissaro_english
+    path: english/thanissaro.txt
+    source: "Thanissaro Bhikkhu English translation of selected suttas"
+    license: "Public Domain (translator release)"
+    language: en
+    upstream:
+      - https://www.dhammatalks.org/suttas/
+    sha256: ""
+    max_size_kb: 5000
+
+  - id: rhys_davids_dialogues
+    path: english/rhys_davids.txt
+    source: "T. W. Rhys Davids — Dialogues of the Buddha (1899)"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/29021
+    sha256: ""
+    max_size_kb: 3500
+
+  - id: cbeta_agama
+    path: chinese/cbeta_agama.txt
+    source: "CBETA — 杂阿含 / 中阿含 / 长阿含 / 增一阿含 (curated)"
+    license: "CC-BY-NC-SA (CBETA)"
+    language: zh
+    upstream:
+      - https://www.cbeta.org/
+      - https://github.com/cbeta-org
+    sha256: ""
+    max_size_kb: 8000
+    notes: "NC license — research use only; not redistributable for commercial purpose."
+
+  - id: dhammapada_multi
+    path: dhammapada/multi.txt
+    source: "Dhammapada — multi-language parallel"
+    license: "Various PD"
+    language: multi
+    upstream:
+      - https://suttacentral.net/dhp
+      - https://www.gutenberg.org/ebooks/2017
+    sha256: ""
+    max_size_kb: 1500

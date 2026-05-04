@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pantheon-pack-founders"
+version = "0.1.0a0"
+description = "Pantheon persona pack — founders of Christianity, Islam, Buddhism. Opt-in only."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Wendy" }]
+keywords = ["pantheon", "persona-pack", "religious-figures"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+    "pantheon-debate>=0.1.0a0",
+]
+
+[project.entry-points."pantheon.personas"]
+founders = "pantheon_pack_founders:provide_personas"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pantheon_pack_founders"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"personas" = "pantheon_pack_founders/personas"

@@ -1,0 +1,50 @@
+schema_version: "1.0"
+persona: jesus
+notes: |
+  This pack ships ZERO canonical text. Run `pantheon corpus fetch jesus`
+  to download the public-domain sources listed below into
+  ~/.pantheon/corpus/jesus/. EmbeddedCorpusStore reads from there at
+  load time; if absent, the persona falls back to prompt-only behaviour
+  and L4 calibration alone (no L2 grounding).
+
+sources:
+  - id: web_nt
+    path: web/nt.txt          # populated by `corpus fetch`
+    source: "World English Bible — New Testament (curated to 4 gospels + Acts)"
+    license: "Public Domain (eBible.org release)"
+    language: en
+    upstream:
+      - https://ebible.org/web/web_readers.zip
+      - https://ebible.org/web/
+    sha256: ""               # filled by `corpus fetch` after verification
+    max_size_kb: 1500
+
+  - id: kjv_nt
+    path: kjv/nt.txt
+    source: "King James Version 1611 — New Testament (curated)"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/10
+    sha256: ""
+    max_size_kb: 1500
+
+  - id: cuv_nt
+    path: cuv/nt.txt
+    source: "Chinese Union Version (1919) — New Testament (curated)"
+    license: "Public Domain (copyright expired in CN and US)"
+    language: zh
+    upstream:
+      - https://github.com/o-tho/cuv-text
+    sha256: ""
+    max_size_kb: 2000
+
+  - id: greek_nestle
+    path: greek/nestle1904.txt
+    source: "Nestle Greek New Testament 1904"
+    license: "Public Domain"
+    language: el
+    upstream:
+      - https://github.com/Center-for-New-Testament-Restoration/Nestle1904
+    sha256: ""
+    max_size_kb: 1500
