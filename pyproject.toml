@@ -20,4 +20,5 @@ asyncio_mode = "auto"
 testpaths = [
     "packages/pantheon-core/tests",
     "packages/pantheon-pack-founders/tests",
+    "packages/pantheon-mcp/tests",
 ]

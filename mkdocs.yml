@@ -1,0 +1,54 @@
+site_name: Pantheon
+site_description: A multi-agent debate framework — summon gods, prophets, and historical figures to deliberate on any question.
+site_url: https://gibroughtta-maker.github.io/Pantheon/
+repo_url: https://github.com/gibroughtta-maker/Pantheon
+repo_name: gibroughtta-maker/Pantheon
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue grey
+      toggle: { icon: material/weather-night, name: Switch to dark mode }
+    - scheme: slate
+      primary: blue grey
+      toggle: { icon: material/weather-sunny, name: Switch to light mode }
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.instant
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - toc: { permalink: true }
+  - pymdownx.highlight: { anchor_linenums: true }
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed: { alternate_style: true }
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: zh
+          name: 中文
+          build: true
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Architecture: architecture.md
+  - MCP Server: mcp.md
+  - Personas: personas.md
+  - Calibration: calibration.md
+  - Reference: reference.md

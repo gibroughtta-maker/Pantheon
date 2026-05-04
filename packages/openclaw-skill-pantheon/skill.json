@@ -1,0 +1,84 @@
+{
+  "$schema": "https://openclaw.dev/schemas/skill-v1.json",
+  "name": "pantheon",
+  "version": "0.1.0a0",
+  "description": "Summon a pantheon of historical/philosophical personas to debate any question.",
+  "author": "Wendy",
+  "license": "MIT",
+  "homepage": "https://github.com/gibroughtta-maker/Pantheon",
+  "command": "/pantheon",
+  "command_aliases": ["/万神殿", "/debate"],
+  "icon": "🏛️",
+
+  "entry": {
+    "kind": "mcp_server",
+    "transport": "stdio",
+    "command": "uvx",
+    "args": ["pantheon-mcp"],
+    "env_passthrough": [
+      "PANTHEON_GATEWAY",
+      "OPENCLAW_BASE_URL",
+      "OPENCLAW_API_KEY",
+      "OPENCLAW_PROJECT",
+      "PANTHEON_SESSIONS_DIR",
+      "PANTHEON_OTEL_ENDPOINT",
+      "PANTHEON_REGION"
+    ]
+  },
+
+  "tools": [
+    "summon",
+    "debate",
+    "swap_persona",
+    "swap_model",
+    "get_verdict",
+    "list_personas",
+    "audit_persona",
+    "cast_divination"
+  ],
+
+  "ui": {
+    "slash_command_form": {
+      "fields": [
+        { "name": "personas",
+          "type": "multiselect",
+          "source": "tool:list_personas",
+          "min": 2,
+          "max": 10,
+          "label": { "en": "Choose personas (2–10)", "zh": "选择 persona (2-10)" } },
+        { "name": "question",
+          "type": "textarea",
+          "label": { "en": "Question to debate", "zh": "辩论议题" },
+          "required": true },
+        { "name": "rounds",
+          "type": "integer",
+          "default": 3,
+          "min": 1,
+          "max": 10,
+          "label": { "en": "Synthesis rounds", "zh": "融合轮数" } }
+      ],
+      "submit": {
+        "calls": [
+          { "tool": "summon",  "args": { "personas": "$personas" }, "bind": "_session" },
+          { "tool": "debate",  "args": {
+              "session_id": "$_session.session_id",
+              "question": "$question",
+              "rounds": "$rounds"
+            }
+          }
+        ],
+        "render": "verdict"
+      }
+    }
+  },
+
+  "permissions": {
+    "filesystem": ["~/.pantheon/"],
+    "network": ["openclaw_gateway"]
+  },
+
+  "compatibility": {
+    "openclaw_min_version": "0.1.0",
+    "mcp_protocol": "1.0"
+  }
+}
