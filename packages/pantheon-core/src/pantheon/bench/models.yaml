@@ -1,0 +1,103 @@
+# Model capability registry — v0 seed.
+#
+# Each model has a 7-dim capability vector matching the persona-skill axes.
+# Numbers are hand-curated from public benchmarks where available (LiveBench,
+# EQ-Bench, CMMLU, MT-Bench) and from triangulated qualitative assessment
+# elsewhere — they are starting points, not measurements. PRs to refine
+# them welcome (see pantheon-bench, M3 stretch).
+#
+# Format:
+#
+#   <model_id>:
+#     ethics:        0.0 – 1.0     # moral reasoning quality
+#     governance:    0.0 – 1.0     # political/policy reasoning
+#     education:     0.0 – 1.0     # explanatory + Socratic quality
+#     business:      0.0 – 1.0     # commercial/strategic reasoning
+#     technology:    0.0 – 1.0     # CS / engineering reasoning
+#     divination:    0.0 – 1.0     # symbolic / interpretive (largely cultural)
+#     emotion:       0.0 – 1.0     # empathy / EQ
+#     cultural_depth_zh: 0.0 – 1.0 # Chinese cultural fluency
+#     cultural_depth_en: 0.0 – 1.0 # English cultural fluency
+#
+# Users may override any entry with ~/.pantheon/models.local.yaml using
+# the same shape (last writer wins).
+
+schema_version: "1.0"
+
+models:
+  claude-opus-4-7:
+    ethics:            0.92
+    governance:        0.88
+    education:         0.92
+    business:          0.85
+    technology:        0.92
+    divination:        0.55
+    emotion:           0.93
+    cultural_depth_zh: 0.85
+    cultural_depth_en: 0.95
+
+  claude-sonnet-4-6:
+    ethics:            0.85
+    governance:        0.82
+    education:         0.87
+    business:          0.82
+    technology:        0.88
+    divination:        0.50
+    emotion:           0.86
+    cultural_depth_zh: 0.80
+    cultural_depth_en: 0.92
+
+  claude-haiku-4-5:
+    ethics:            0.72
+    governance:        0.70
+    education:         0.74
+    business:          0.72
+    technology:        0.78
+    divination:        0.40
+    emotion:           0.72
+    cultural_depth_zh: 0.65
+    cultural_depth_en: 0.85
+
+  gpt-4o:
+    ethics:            0.83
+    governance:        0.82
+    education:         0.85
+    business:          0.84
+    technology:        0.90
+    divination:        0.50
+    emotion:           0.82
+    cultural_depth_zh: 0.78
+    cultural_depth_en: 0.93
+
+  deepseek-chat:
+    ethics:            0.78
+    governance:        0.75
+    education:         0.80
+    business:          0.78
+    technology:        0.85
+    divination:        0.55
+    emotion:           0.72
+    cultural_depth_zh: 0.92      # strongest Chinese fluency at this tier
+    cultural_depth_en: 0.78
+
+  nim/qwen2-72b-instruct:
+    ethics:            0.74
+    governance:        0.72
+    education:         0.76
+    business:          0.74
+    technology:        0.80
+    divination:        0.55
+    emotion:           0.70
+    cultural_depth_zh: 0.90
+    cultural_depth_en: 0.75
+
+  nim/glm-4-9b:
+    ethics:            0.70
+    governance:        0.68
+    education:         0.72
+    business:          0.70
+    technology:        0.75
+    divination:        0.50
+    emotion:           0.66
+    cultural_depth_zh: 0.88
+    cultural_depth_en: 0.70

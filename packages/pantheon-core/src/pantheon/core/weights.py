@@ -42,15 +42,34 @@ def compute_weights(
     user_prefs: dict[int, float] | None = None,
     coefficients: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 0.5),
 ) -> dict[int, float]:
+    """Softmax-of-logs weighting (plan §5.1).
+
+    score(persona)  = a · log(skill_match)
+                    + b · log(model_capability)     ← from models.yaml
+                    + c · log(user_preference)
+                    + d · log(corpus_coverage)      ← non-Null corpus → 1.0
+
+    weight(persona) = softmax(score)
+    """
+    # Lazy import to avoid an import cycle: bench → calibration.probes
+    # imports DIMENSIONS, weights doesn't strictly need bench at import time.
+    from pantheon.bench.registry import capability_for
+    from pantheon.memory.corpus import NullCorpusStore
+
     a, b, c, d = coefficients
     topic = topic_tags or {}
     user_prefs = user_prefs or {}
     scores: dict[int, float] = {}
     for ag in agents:
         skill_match = _cosine_like(ag.persona.spec.skills, topic) if topic else 0.5
-        model_cap = 1.0  # M0 placeholder
+        cap = capability_for(ag.model.id)
+        if topic:
+            # Model capability weighted by the topic — same dim as skill.
+            model_cap = _cosine_like(cap.skills, topic) or cap.overall
+        else:
+            model_cap = cap.overall
         user_pref = user_prefs.get(ag.seat, 1.0)
-        corpus_cov = 1.0  # M0 placeholder
+        corpus_cov = 0.4 if isinstance(ag.persona.corpus, NullCorpusStore) else 1.0
         scores[ag.seat] = (
             a * _safe_log(skill_match)
             + b * _safe_log(model_cap)

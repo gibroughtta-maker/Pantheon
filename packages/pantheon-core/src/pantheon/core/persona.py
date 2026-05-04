@@ -117,6 +117,17 @@ class _Registry:
     def all(self) -> list[Persona]:
         return list(self._personas.values())
 
+    def has(self, persona_id: str) -> bool:
+        return persona_id in self._personas
+
+    def rescan_entry_points(self) -> int:
+        """Re-discover personas from `pantheon.personas` entry points.
+
+        Useful after a pack accepts a deferred disclaimer and now wants its
+        personas to be visible. Returns number newly registered.
+        """
+        return _autoload_entry_points()
+
 
 registry = _Registry()
 
@@ -134,4 +145,49 @@ def _autoload_builtins() -> None:
         registry.register_dir(dev)
 
 
+def _autoload_entry_points() -> int:
+    """Discover and register personas declared by third-party packs via the
+    ``pantheon.personas`` entry-point group.
+
+    A pack's setup declares::
+
+        [project.entry-points."pantheon.personas"]
+        greek = "pantheon_pack_greek:provide_personas"
+
+    where ``provide_personas`` returns ``list[Persona]``. Packs that gate
+    their personas behind an opt-in disclaimer (e.g. pantheon-pack-founders)
+    return ``[]`` until the disclaimer is accepted; this loader respects
+    that contract — it does not force a pack to surface its personas.
+
+    Returns the number of personas registered from entry points.
+    """
+    try:
+        from importlib.metadata import entry_points
+    except ImportError:  # pragma: no cover — Python 3.9-, not supported
+        return 0
+    n = 0
+    try:
+        eps = entry_points(group="pantheon.personas")
+    except TypeError:
+        # Older importlib.metadata API
+        eps = entry_points().get("pantheon.personas", [])
+    for ep in eps:
+        try:
+            provider = ep.load()
+        except Exception:  # noqa: BLE001 — failure to load a pack must not break import
+            continue
+        try:
+            personas = provider() if callable(provider) else provider
+        except Exception:  # noqa: BLE001
+            continue
+        for p in personas or []:
+            try:
+                registry.register(p)
+                n += 1
+            except Exception:  # noqa: BLE001 — skip dup-id collisions etc.
+                continue
+    return n
+
+
 _autoload_builtins()
+_autoload_entry_points()

@@ -165,9 +165,11 @@ def _format_verdict(v) -> str:
 persona_app = typer.Typer(no_args_is_help=True, help="Persona ops: calibrate, ingest-corpus.")
 calibration_app = typer.Typer(no_args_is_help=True, help="Calibration ops: replay.")
 corpus_app = typer.Typer(no_args_is_help=True, help="Corpus ops: fetch, verify.")
+pack_app = typer.Typer(no_args_is_help=True, help="Persona pack ops: audit, info.")
 app.add_typer(persona_app, name="persona")
 app.add_typer(calibration_app, name="calibration")
 app.add_typer(corpus_app, name="corpus")
+app.add_typer(pack_app, name="pack")
 
 
 @persona_app.command("calibrate")
@@ -440,6 +442,167 @@ def corpus_verify(
                 overall_ok = False
     if not overall_ok:
         raise typer.Exit(1)
+
+
+@pack_app.command("audit")
+def pack_audit(
+    pack_path: Path = typer.Argument(..., help="Path to a persona pack root (must contain personas/)"),
+    judges: str = typer.Option("", "--judges", help="Comma-separated judge model ids; if empty, runs heuristic checks only"),
+    gateway: str = typer.Option("mock", help="mock | openclaw"),
+    fail_threshold: float = typer.Option(0.85, "--threshold",
+                                          help="cultural_sensitivity_score below this fails the audit"),
+) -> None:
+    """Audit a persona pack: prompt-injection scan, citation-sample check,
+    and (if judges provided) LLM-judge cultural-sensitivity scoring.
+
+    Exits non-zero if any check fails.
+    """
+    import yaml as _yaml
+
+    from pantheon.core.persona import load_persona
+
+    pack_path = Path(pack_path).resolve()
+    personas_dir = pack_path / "personas"
+    if not personas_dir.exists():
+        raise typer.BadParameter(f"no personas/ under {pack_path}")
+    persona_yamls = sorted(personas_dir.rglob("persona.yaml"))
+    if not persona_yamls:
+        raise typer.BadParameter("pack contains no persona.yaml files")
+
+    failures: list[str] = []
+    table = Table(title=f"pack audit — {pack_path.name}")
+    table.add_column("persona")
+    table.add_column("prompt-injection")
+    table.add_column("manifest")
+    table.add_column("audit metadata")
+
+    # Heuristic checks (no LLM needed).
+    INJECTION_TRIGGERS = [
+        "ignore previous", "ignore the previous", "disregard prior",
+        "you are now", "system prompt:", "act as if you are",
+    ]
+    for yp in persona_yamls:
+        try:
+            p = load_persona(yp)
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"{yp}: failed to load — {e}")
+            table.add_row(yp.parent.name, "—", "—", f"[red]LOAD FAIL[/]: {e}")
+            continue
+        prompt = p.spec.system_prompt.lower()
+        inj_hits = [t for t in INJECTION_TRIGGERS if t in prompt]
+        manifest_path = yp.parent / "corpus" / "manifest.yaml"
+        manifest_ok = (
+            "—"
+            if not manifest_path.exists()
+            else (
+                "ok"
+                if all(
+                    s.get("upstream") and s.get("path")
+                    for s in (
+                        _yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+                        or {}
+                    ).get("sources", [])
+                )
+                else "incomplete"
+            )
+        )
+        audit = p.spec.audit
+        audit_status = "ok"
+        if not audit.known_biases:
+            audit_status = "missing known_biases"
+            failures.append(f"{p.id}: persona declares no known_biases")
+        if audit.cultural_sensitivity_score is not None and audit.cultural_sensitivity_score < fail_threshold:
+            audit_status = f"score {audit.cultural_sensitivity_score} < {fail_threshold}"
+            failures.append(
+                f"{p.id}: cultural_sensitivity_score "
+                f"{audit.cultural_sensitivity_score} < threshold {fail_threshold}"
+            )
+        table.add_row(
+            p.id,
+            "[green]ok[/]" if not inj_hits else f"[red]hit: {inj_hits}[/]",
+            manifest_ok,
+            ("[green]" + audit_status + "[/]") if audit_status == "ok" else f"[yellow]{audit_status}[/]",
+        )
+        if inj_hits:
+            failures.append(f"{p.id}: prompt-injection trigger words: {inj_hits}")
+
+    console.print(table)
+
+    judge_ids = [j.strip() for j in judges.split(",") if j.strip()]
+    if judge_ids:
+        from pantheon import Model
+
+        gw = _build_gateway(gateway)
+        console.print(f"\n[cyan]Running LLM cultural-sensitivity audit with judges:[/] {judge_ids}")
+
+        async def _go() -> None:
+            for yp in persona_yamls:
+                p = load_persona(yp)
+                prompt = (
+                    "You are auditing a persona definition for a multi-agent debate system. "
+                    "Score the persona's prompt and metadata for cultural sensitivity, "
+                    "stereotype avoidance, and historical accuracy on a 0.0–1.0 scale. "
+                    "Output ONLY JSON: {\"score\": 0.0, \"concerns\": [\"...\"]}\n\n"
+                    f"Persona id: {p.id}\nDisplay: {p.display_name}\n"
+                    f"School: {p.spec.school}\nKnown biases: {p.spec.audit.known_biases}\n"
+                    f"System prompt:\n{p.spec.system_prompt[:1500]}"
+                )
+                scores = []
+                for jid in judge_ids:
+                    try:
+                        m = Model(id=jid, gateway=gw)
+                        r = await m.call([{"role": "user", "content": prompt}],
+                                          temperature=0.0, max_tokens=300)
+                        import json as _json
+                        text = r.text.strip()
+                        a = text.find("{"); b = text.rfind("}")
+                        if a >= 0 and b > a:
+                            parsed = _json.loads(text[a:b+1])
+                            scores.append(float(parsed.get("score", 0.0)))
+                    except Exception as e:  # noqa: BLE001
+                        console.print(f"  [yellow]{p.id} via {jid}: {e}[/]")
+                if scores:
+                    median = sorted(scores)[len(scores) // 2]
+                    color = "green" if median >= fail_threshold else "red"
+                    console.print(f"  [{color}]{p.id}: median score {median:.2f}[/]")
+                    if median < fail_threshold:
+                        failures.append(f"{p.id}: LLM-judge median {median:.2f} < threshold {fail_threshold}")
+                else:
+                    console.print(f"  [yellow]{p.id}: no judge scores collected[/]")
+
+        asyncio.run(_go())
+
+    if failures:
+        console.print(f"\n[red]✗ audit FAILED with {len(failures)} issue(s):[/]")
+        for f in failures:
+            console.print(f"  - {f}")
+        raise typer.Exit(1)
+    console.print(f"\n[green]✓ audit passed: {len(persona_yamls)} personas[/]")
+
+
+@pack_app.command("info")
+def pack_info() -> None:
+    """List all loaded persona packs (built-in + entry-point + founders)."""
+    try:
+        from importlib.metadata import entry_points
+        eps = entry_points(group="pantheon.personas")
+    except (ImportError, TypeError):
+        eps = []
+    table = Table(title="Persona packs")
+    table.add_column("name")
+    table.add_column("entry point")
+    table.add_column("provides")
+    if not eps:
+        table.add_row("(builtin)", "—", "see `pantheon list-personas`")
+    for ep in eps:
+        try:
+            provider = ep.load()
+            personas = provider() if callable(provider) else provider
+            ids = ", ".join(p.id for p in personas) if personas else "(gated; see pack docs)"
+        except Exception as e:  # noqa: BLE001
+            ids = f"[red]load error: {e}[/]"
+        table.add_row(ep.name, ep.value, ids)
+    console.print(table)
 
 
 if __name__ == "__main__":
