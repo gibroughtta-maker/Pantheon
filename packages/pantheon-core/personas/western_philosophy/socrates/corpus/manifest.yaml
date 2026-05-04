@@ -1,0 +1,26 @@
+schema_version: "1.0"
+persona: socrates
+notes: |
+  Curated excerpts from Plato's Apology, Crito, and Phaedo (Jowett translation,
+  1892, public domain). The selection covers all 7 calibration dimensions with
+  emphasis on ethics, education, and emotion (Socrates' strengths).
+
+sources:
+  - path: apology.txt
+    source: "Plato, Apology — Jowett translation (1892)"
+    license: Public Domain
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/1656
+  - path: crito.txt
+    source: "Plato, Crito — Jowett translation (1892)"
+    license: Public Domain
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/1657
+  - path: phaedo_extracts.txt
+    source: "Plato, Phaedo — Jowett translation (1892), selected passages"
+    license: Public Domain
+    language: en
+    upstream:
+      - https://www.gutenberg.org/ebooks/1658

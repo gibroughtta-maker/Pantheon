@@ -1,0 +1,22 @@
+schema_version: "1.0"
+persona: naval
+notes: |
+  Curated excerpts from Naval Ravikant's public Twitter threads and the
+  Almanack of Naval Ravikant. Naval has stated publicly that his content
+  may be freely shared for any purpose. Per the Almanack: "Free to copy
+  and redistribute as long as you credit Naval and link back to source."
+
+sources:
+  - path: how_to_get_rich.txt
+    source: "Naval Ravikant — How to Get Rich (Twitter thread, 31 May 2018)"
+    license: "Public re-share permitted by author"
+    language: en
+    upstream:
+      - https://twitter.com/naval/status/1002103360646823936
+      - https://nav.al/rich
+  - path: principles.txt
+    source: "Naval Ravikant — Almanack excerpts (Eric Jorgenson, 2020)"
+    license: CC-BY-NC (per Almanack)
+    language: en
+    upstream:
+      - https://www.navalmanack.com/
