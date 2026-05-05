@@ -1,0 +1,43 @@
+# Template pyproject for community persona packs.
+#
+# Copy this directory to a new repo, then:
+#   1. Replace `pantheon-pack-example` with your pack name throughout
+#      (pyproject name, src dir, entry-point key, README header).
+#   2. Replace `sample_persona` with your persona id (and add more
+#      personas alongside it).
+#   3. Fill in AUDIT.md with your three reviewers.
+#   4. `pip install -e .` and `pantheon list-personas` to verify.
+#   5. `pantheon pack audit packages/<your-pack>` to gate-check.
+#
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pantheon-pack-example"
+version = "0.0.1"
+description = "Template persona pack for Pantheon. Replace this string."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "your-name-here" }]
+keywords = ["pantheon", "persona-pack"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pantheon-debate>=0.1.0a0",
+]
+
+# Pantheon discovers personas via this entry-point group. The function
+# returns a list[Persona]. By convention, gate sensitive content behind
+# an `accept_disclaimer()` call (return [] until accepted).
+[project.entry-points."pantheon.personas"]
+example = "pantheon_pack_example:provide_personas"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pantheon_pack_example"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"personas" = "pantheon_pack_example/personas"

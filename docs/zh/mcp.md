@@ -1,22 +1,22 @@
 # MCP Server
 
-`pantheon-mcp` is a stdio MCP server that exposes the SDK's debate
-machinery as 8 tools, callable from any MCP client.
+`pantheon-mcp` 是个 stdio MCP server，把 SDK 的辩论引擎暴露成 8 个 tool，
+任意 MCP 客户端都能调。
 
 ## Tools
 
-| Tool | Returns | Use |
+| Tool | 返回 | 用途 |
 |---|---|---|
-| `summon` | `{ session_id, agents }` | Build a pantheon |
-| `debate` | `{ verdict, events }` | Run the 5-phase debate |
-| `swap_persona` | `{ queued: true }` | Queue persona swap; applied at next phase boundary |
-| `swap_model` | `{ queued: true }` | Queue model swap; persona+history preserved |
-| `get_verdict` | `Verdict` | Fetch the verdict (e.g. after async streaming) |
-| `list_personas` | `{ personas: [...] }` | Enumerate all registered personas (filterable by school) |
-| `audit_persona` | `{ audit, known_biases }` | Read declared audit metadata for a persona |
-| `cast_divination` | placeholder | M4 — opt-in pantheon-divination plugin |
+| `summon` | `{ session_id, agents }` | 创建一个 pantheon 会话 |
+| `debate` | `{ verdict, events }` | 跑五阶段辩论 |
+| `swap_persona` | `{ queued: true }` | 入队人格切换；下一 phase 边界生效 |
+| `swap_model` | `{ queued: true }` | 入队模型切换；persona 与 history 都保留 |
+| `get_verdict` | `Verdict` | 取 verdict（流式异步消费后用） |
+| `list_personas` | `{ personas: [...] }` | 列出所有已注册 personas（可按 school 过滤） |
+| `audit_persona` | `{ audit, known_biases }` | 读取 persona YAML 中声明的 audit metadata |
+| `cast_divination` | placeholder | 接 pantheon-divination；要先 accept_disclaimer |
 
-## Configure your MCP client
+## 配置 MCP 客户端
 
 ```jsonc
 {
@@ -34,6 +34,5 @@ machinery as 8 tools, callable from any MCP client.
 }
 ```
 
-If `PANTHEON_GATEWAY` is unset or `mock`, no real LLM calls are made and
-the response uses the deterministic `MockGateway` — useful for trying
-the protocol before wiring in a gateway.
+`PANTHEON_GATEWAY` 不设或为 `mock` 时不会调用真 LLM，使用确定性的
+`MockGateway`——适合先把协议跑通、再接真 gateway。

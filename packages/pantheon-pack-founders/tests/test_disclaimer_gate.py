@@ -48,8 +48,9 @@ def test_accept_then_register(monkeypatch):
 def test_personas_have_corpus_manifest_pointing_at_upstream(monkeypatch):
     """Each persona ships a manifest.yaml with upstream URLs but NO
     canonical text inline."""
-    import yaml
     from pathlib import Path
+
+    import yaml
 
     monkeypatch.delenv("PANTHEON_REGION", raising=False)
     ppf = _fresh_module()

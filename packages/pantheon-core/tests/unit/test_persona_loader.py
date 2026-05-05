@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon import registry
 from pantheon.types.persona import PersonaSpec
 

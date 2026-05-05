@@ -1,0 +1,23 @@
+id: gd_003
+title: "Reform or revolution"
+question: "Faced with a deeply unjust regime, should one reform from within or work for revolution from without?"
+agents:
+  - { seat: 1, persona: confucius,        model: deepseek-chat }
+  - { seat: 2, persona: mencius,          model: deepseek-chat }
+  - { seat: 3, persona: aristotle,        model: claude-opus-4-7 }
+  - { seat: 4, persona: nietzsche,        model: claude-opus-4-7 }
+  - { seat: 5, persona: marcus_aurelius,  model: claude-opus-4-7 }
+rounds: 4
+seed: 33
+topic_tags:
+  governance: 0.95
+  ethics: 0.85
+  emotion: 0.30
+expected:
+  schema_version: "1.0"
+  must_address: [legitimacy, violence, gradualism, the_many_vs_the_few]
+  must_not_contain_substring: ["lorem ipsum"]
+  rubric_thresholds:
+    reasoning_quality: 0.78
+    citation_accuracy: 0.78
+    cultural_consistency: 0.80

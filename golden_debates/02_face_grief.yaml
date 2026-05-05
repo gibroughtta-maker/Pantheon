@@ -1,0 +1,21 @@
+id: gd_002
+title: "Facing the death of a parent"
+question: "How should I face the impending death of my mother?"
+agents:
+  - { seat: 1, persona: confucius,        model: deepseek-chat }
+  - { seat: 2, persona: marcus_aurelius,  model: claude-opus-4-7 }
+  - { seat: 3, persona: socrates,         model: claude-opus-4-7 }
+rounds: 3
+seed: 7
+topic_tags:
+  emotion: 0.95
+  ethics: 0.65
+  divination: 0.05
+expected:
+  schema_version: "1.0"
+  must_address: [grief, duty, acceptance, presence]
+  must_not_contain_substring: ["lorem ipsum"]
+  rubric_thresholds:
+    reasoning_quality: 0.80
+    citation_accuracy: 0.85
+    cultural_consistency: 0.85

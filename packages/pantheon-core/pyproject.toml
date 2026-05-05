@@ -17,7 +17,14 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gibroughtta-maker/Pantheon"
+Documentation = "https://gibroughtta-maker.github.io/Pantheon/"
+Issues = "https://github.com/gibroughtta-maker/Pantheon/issues"
+Changelog = "https://github.com/gibroughtta-maker/Pantheon/blob/main/CHANGELOG.md"
 dependencies = [
     "pydantic>=2.6",
     "pyyaml>=6.0",

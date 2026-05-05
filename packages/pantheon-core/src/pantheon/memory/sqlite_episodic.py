@@ -23,7 +23,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -56,7 +56,7 @@ class SqliteEpisodicStore:
 
     async def remember(self, key: str, value: dict) -> None:
         payload = json.dumps(value, ensure_ascii=False)
-        ts = datetime.now(timezone.utc).isoformat()
+        ts = datetime.now(UTC).isoformat()
 
         def _do() -> None:
             with self._connect() as conn:

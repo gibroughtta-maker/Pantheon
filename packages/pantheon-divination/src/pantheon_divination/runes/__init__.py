@@ -64,7 +64,7 @@ SPREADS = {
 
 
 def _seed_for(question: str, spread: str, seed: int) -> int:
-    h = hashlib.sha256(f"{seed}|{spread}|{question}".encode("utf-8")).digest()
+    h = hashlib.sha256(f"{seed}|{spread}|{question}".encode()).digest()
     return int.from_bytes(h[:8], "big")
 
 

@@ -5,7 +5,6 @@ import asyncio
 import time
 
 import pytest
-
 from pantheon.gateway.rate_limit import RateLimiter
 
 

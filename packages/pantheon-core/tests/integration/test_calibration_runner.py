@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon import MockGateway, Model, ScriptedReply, registry
 from pantheon.calibration.probes import DIMENSIONS, load_probes
 from pantheon.calibration.runner import run_calibration

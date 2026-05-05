@@ -4,8 +4,7 @@ from __future__ import annotations
 import json
 
 import pytest
-
-from pantheon import Model, MockGateway, ScriptedReply
+from pantheon import MockGateway, Model, ScriptedReply
 from pantheon.calibration.probes import DIMENSIONS
 from pantheon.topic import (
     TopicClassifier,

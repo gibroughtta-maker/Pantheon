@@ -3,13 +3,10 @@ event ordering, verdict shape, and idempotent debate_id."""
 from __future__ import annotations
 
 import pytest
-
-from pantheon import MockGateway, Pantheon
+from pantheon import Pantheon
 from pantheon.types.events import (
     PhaseBoundaryEvent,
     SpeechEvent,
-    SystemEvent,
-    VerdictEvent,
 )
 
 

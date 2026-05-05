@@ -1,0 +1,22 @@
+id: gd_001
+title: "Indie startup decision"
+question: "Should I quit my job to start an indie startup?"
+agents:
+  - { seat: 1, persona: confucius,    model: deepseek-chat }
+  - { seat: 2, persona: socrates,     model: claude-opus-4-7 }
+  - { seat: 3, persona: naval,        model: claude-opus-4-7 }
+  - { seat: 4, persona: paul_graham,  model: claude-opus-4-7 }
+rounds: 3
+seed: 42
+topic_tags:
+  business: 0.9
+  ethics: 0.4
+  emotion: 0.4
+expected:
+  schema_version: "1.0"
+  must_address: [risk, opportunity_cost, family_obligation]
+  must_not_contain_substring: ["lorem ipsum"]
+  rubric_thresholds:
+    reasoning_quality: 0.75
+    citation_accuracy: 0.80
+    cultural_consistency: 0.80

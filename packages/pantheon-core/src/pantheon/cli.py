@@ -166,10 +166,12 @@ persona_app = typer.Typer(no_args_is_help=True, help="Persona ops: calibrate, in
 calibration_app = typer.Typer(no_args_is_help=True, help="Calibration ops: replay.")
 corpus_app = typer.Typer(no_args_is_help=True, help="Corpus ops: fetch, verify.")
 pack_app = typer.Typer(no_args_is_help=True, help="Persona pack ops: audit, info.")
+golden_app = typer.Typer(no_args_is_help=True, help="Golden debate fixtures: run, list.")
 app.add_typer(persona_app, name="persona")
 app.add_typer(calibration_app, name="calibration")
 app.add_typer(corpus_app, name="corpus")
 app.add_typer(pack_app, name="pack")
+app.add_typer(golden_app, name="golden")
 
 
 @persona_app.command("calibrate")
@@ -323,8 +325,9 @@ def corpus_fetch(
     exponential backoff)."""
     import asyncio as _asyncio
     import hashlib
-    import yaml as _yaml
+
     import httpx
+    import yaml as _yaml
 
     cache_root = cache_dir or (Path.home() / ".pantheon" / "corpus")
     cache_root.mkdir(parents=True, exist_ok=True)
@@ -409,6 +412,7 @@ def corpus_verify(
 ) -> None:
     """Verify cached corpus files match their manifest sha256."""
     import hashlib
+
     import yaml as _yaml
 
     cache_root = cache_dir or (Path.home() / ".pantheon" / "corpus")
@@ -603,6 +607,114 @@ def pack_info() -> None:
             ids = f"[red]load error: {e}[/]"
         table.add_row(ep.name, ep.value, ids)
     console.print(table)
+
+
+@golden_app.command("list")
+def golden_list(
+    fixtures_dir: Path = typer.Option(Path("golden_debates"), "--dir"),
+) -> None:
+    """List the golden debate fixtures available."""
+    import yaml as _yaml
+    if not fixtures_dir.exists():
+        console.print(f"[red]✗[/] no fixtures dir at {fixtures_dir}")
+        raise typer.Exit(2)
+    table = Table(title=f"Golden debates — {fixtures_dir}")
+    table.add_column("id")
+    table.add_column("title")
+    table.add_column("seats")
+    table.add_column("rounds")
+    table.add_column("seed")
+    for f in sorted(fixtures_dir.glob("*.yaml")):
+        spec = _yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+        table.add_row(
+            spec.get("id", f.stem),
+            spec.get("title", ""),
+            str(len(spec.get("agents") or [])),
+            str(spec.get("rounds", "")),
+            str(spec.get("seed", "")),
+        )
+    console.print(table)
+
+
+@golden_app.command("run")
+def golden_run(
+    selector: str = typer.Argument("", help="Fixture id stem to run, or empty for all"),
+    fixtures_dir: Path = typer.Option(Path("golden_debates"), "--dir"),
+    use_real_llm: bool = typer.Option(
+        False, "--use-real-llm",
+        help="Use the configured gateway instead of MockGateway",
+    ),
+    gateway: str = typer.Option("mock", help="mock | openclaw"),
+    out_dir: Path = typer.Option(
+        Path("golden_debates/runs"), "--out",
+        help="Where to land the recorded JSONL transcripts",
+    ),
+) -> None:
+    """Run one or all golden debate fixtures.
+
+    With ``--use-real-llm`` flag, dispatches through the named gateway
+    (real LLM cost). Without it, uses MockGateway (deterministic, free)
+    — the verdict shape is checked for completeness but the prose is
+    placeholder, so prose-quality assertions are skipped.
+    """
+    import asyncio as _asyncio
+
+    import yaml as _yaml
+
+    from pantheon import Agent, Model, Pantheon, registry
+
+    if not fixtures_dir.exists():
+        raise typer.BadParameter(f"no fixtures dir at {fixtures_dir}")
+    fixtures = []
+    for f in sorted(fixtures_dir.glob("*.yaml")):
+        if selector and selector not in f.stem:
+            continue
+        fixtures.append(f)
+    if not fixtures:
+        raise typer.BadParameter(f"no fixtures match {selector!r}")
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    gw = _build_gateway(gateway) if use_real_llm else MockGateway()
+
+    async def _run_one(spec_path: Path) -> tuple[str, bool, str]:
+        spec = _yaml.safe_load(spec_path.read_text(encoding="utf-8")) or {}
+        p = Pantheon(gateway=gw)
+        for ag_spec in spec.get("agents") or []:
+            persona = registry.get(ag_spec["persona"])
+            p.add_agent(
+                Agent(
+                    seat=int(ag_spec["seat"]),
+                    persona=persona,
+                    model=Model(id=ag_spec["model"], gateway=gw),
+                )
+            )
+        sess = p.debate(
+            spec["question"],
+            rounds=int(spec.get("rounds", 3)),
+            seed=int(spec.get("seed", 0)),
+            topic_tags=spec.get("topic_tags") or {},
+        )
+        async for _ in sess.stream():
+            pass
+        v = await sess.verdict()
+        return spec.get("id", spec_path.stem), bool(v.consensus or v.no_consensus), str(v.debate_id)
+
+    failures: list[str] = []
+    for spec_path in fixtures:
+        try:
+            gid, ok, debate_id = _asyncio.run(_run_one(spec_path))
+            if ok:
+                console.print(f"[green]✓[/] {gid}: debate_id={debate_id}")
+            else:
+                console.print(f"[red]✗[/] {gid}: empty verdict")
+                failures.append(gid)
+        except Exception as e:  # noqa: BLE001
+            console.print(f"[red]✗[/] {spec_path.stem}: {e!r}")
+            failures.append(spec_path.stem)
+    if failures:
+        console.print(f"\n[red]{len(failures)} golden debate(s) failed[/]")
+        raise typer.Exit(1)
+    console.print(f"\n[green]✓ all {len(fixtures)} golden debates passed[/]")
 
 
 if __name__ == "__main__":

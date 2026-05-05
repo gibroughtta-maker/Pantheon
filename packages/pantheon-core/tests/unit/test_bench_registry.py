@@ -1,8 +1,6 @@
 """bench/models.yaml loader + capability lookup."""
 from __future__ import annotations
 
-import pytest
-
 from pantheon.bench import capability_for, load_models_yaml, models_registry
 
 

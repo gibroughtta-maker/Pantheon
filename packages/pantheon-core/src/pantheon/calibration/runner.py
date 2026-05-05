@@ -8,8 +8,8 @@ two (not silently picking one), with the dim added to ``flags``.
 from __future__ import annotations
 
 import secrets
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pantheon.calibration.l2_retrieval import L2Result, score_l2
@@ -54,7 +54,7 @@ async def run_calibration(
     """
     probes = probes or load_probes()
     run_id = secrets.token_hex(8)
-    run_at = datetime.now(timezone.utc).isoformat()
+    run_at = datetime.now(UTC).isoformat()
 
     rec_dir = Path(record_dir) if record_dir else (default_session_dir().parent / "calibration")
     rec_dir.mkdir(parents=True, exist_ok=True)

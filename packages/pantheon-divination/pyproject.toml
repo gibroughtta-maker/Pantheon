@@ -8,12 +8,18 @@ version = "0.1.0a0"
 description = "Divination methods (易经 / tarot / runes / astrology / 紫微) for the Pantheon framework. Opt-in only."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+license = { text = "MIT" }
 authors = [{ name = "Wendy" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gibroughtta-maker/Pantheon"
+Documentation = "https://gibroughtta-maker.github.io/Pantheon/calibration/"
+Issues = "https://github.com/gibroughtta-maker/Pantheon/issues"
 dependencies = [
     "pantheon-debate>=0.1.0a0",
 ]

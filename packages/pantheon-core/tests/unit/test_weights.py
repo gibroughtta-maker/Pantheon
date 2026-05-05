@@ -1,8 +1,6 @@
 """Weight system — softmax-of-logs sums to 1, handles zeros, respects user prefs."""
 from __future__ import annotations
 
-import pytest
-
 from pantheon import Agent, MockGateway, Model, registry
 from pantheon.core.weights import _cosine_like, compute_weights
 

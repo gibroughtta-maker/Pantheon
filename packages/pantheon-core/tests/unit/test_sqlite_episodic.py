@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon.memory.sqlite_episodic import SqliteEpisodicStore
 
 

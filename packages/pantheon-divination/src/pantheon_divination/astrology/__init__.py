@@ -15,11 +15,10 @@ time + place) are M4+ stretches.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 from pantheon_divination import DivinationUnavailable, _ensure_accepted
 from pantheon_divination.types import DivinationLine, DivinationResult
-
 
 _BODIES = (
     ("sun",      "Sun"),
@@ -59,9 +58,9 @@ def cast(
             "Install: pip install pantheon-divination[astrology]"
         ) from e
 
-    moment = moment or datetime.now(tz=timezone.utc)
+    moment = moment or datetime.now(tz=UTC)
     if moment.tzinfo is None:
-        moment = moment.replace(tzinfo=timezone.utc)
+        moment = moment.replace(tzinfo=UTC)
 
     ts = load.timescale()
     t = ts.from_datetime(moment)

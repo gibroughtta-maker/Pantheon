@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import pytest
-
-from pantheon import MockGateway, ScriptedReply
+from pantheon import MockGateway
 from pantheon_mcp.sessions import SessionManager
 from pantheon_mcp.tools import TOOL_SCHEMAS, handle
 

@@ -5,7 +5,6 @@ import asyncio
 from typing import Protocol, runtime_checkable
 
 from pantheon.debate.session import Session
-from pantheon.types.events import VerdictEvent
 from pantheon.types.verdict import Verdict
 
 

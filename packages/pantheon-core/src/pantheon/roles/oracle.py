@@ -117,9 +117,7 @@ class Oracle:
 
         no_consensus = len(positions) > 1 and weights.get(positions[0][0].seat, 0.0) < 0.4
 
-        if soft_consensus:
-            robustness = "low"
-        elif no_consensus:
+        if soft_consensus or no_consensus:
             robustness = "low"
         elif len(positions) >= 3:
             robustness = "medium"

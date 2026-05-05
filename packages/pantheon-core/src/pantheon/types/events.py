@@ -1,7 +1,7 @@
 """Streaming debate events emitted by `Session.stream()`."""
 from __future__ import annotations
 
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -52,6 +52,6 @@ class VerdictEvent(_EventBase):
 
 
 DebateEvent = Annotated[
-    Union[SpeechEvent, PhaseBoundaryEvent, SwapEvent, SystemEvent, VerdictEvent],
+    SpeechEvent | PhaseBoundaryEvent | SwapEvent | SystemEvent | VerdictEvent,
     Field(discriminator="type"),
 ]

@@ -1,12 +1,10 @@
 """Replay determinism — recording + ReplayGateway re-runs identically."""
 from __future__ import annotations
 
-import os
 import tempfile
 from pathlib import Path
 
 import pytest
-
 from pantheon import Agent, MockGateway, Model, Pantheon, registry
 
 

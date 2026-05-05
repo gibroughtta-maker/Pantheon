@@ -13,7 +13,6 @@ import yaml
 from pantheon.memory.corpus import CorpusStore, NullCorpusStore
 from pantheon.memory.embedded_corpus import (
     Embedder,
-    EmbeddedCorpusStore,
     HashEmbedder,
     load_corpus_for_persona,
 )

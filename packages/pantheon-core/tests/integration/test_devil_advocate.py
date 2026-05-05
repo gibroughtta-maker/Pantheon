@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import pytest
-
-from pantheon import MockGateway, Pantheon, ScriptedReply, registry
+from pantheon import MockGateway, Pantheon, ScriptedReply
 from pantheon.types.events import SystemEvent
 
 

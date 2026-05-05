@@ -13,7 +13,12 @@ authors = [{ name = "Wendy" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gibroughtta-maker/Pantheon"
+Issues = "https://github.com/gibroughtta-maker/Pantheon/issues"
 dependencies = [
     "pantheon-debate>=0.1.0a0",
 ]

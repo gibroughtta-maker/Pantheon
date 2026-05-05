@@ -23,7 +23,6 @@ from pantheon.types.events import (
 
 from pantheon_mcp.sessions import SessionManager
 
-
 # ============================================================================
 # Tool schemas (JSON Schema fragments). Used by the MCP `list_tools` handler.
 # ============================================================================

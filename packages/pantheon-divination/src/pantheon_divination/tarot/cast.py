@@ -13,7 +13,6 @@ from pantheon_divination import _ensure_accepted
 from pantheon_divination.tarot.data import TarotCard, load_cards
 from pantheon_divination.types import DivinationLine, DivinationResult
 
-
 # Spread definitions — list of position labels (English / Chinese / brief role).
 SPREADS: dict[str, list[tuple[str, str, str]]] = {
     "celtic_cross": [
@@ -40,7 +39,7 @@ SPREADS: dict[str, list[tuple[str, str, str]]] = {
 
 
 def _seed_for(question: str, spread: str, seed: int) -> int:
-    h = hashlib.sha256(f"{seed}|{spread}|{question}".encode("utf-8")).digest()
+    h = hashlib.sha256(f"{seed}|{spread}|{question}".encode()).digest()
     return int.from_bytes(h[:8], "big")
 
 

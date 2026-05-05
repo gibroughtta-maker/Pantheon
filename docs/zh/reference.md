@@ -1,21 +1,20 @@
-# Reference
+# 参考
 
 ## Persona YAML schema (v1.0)
 
-See [`pantheon.types.persona.PersonaSpec`](https://github.com/gibroughtta-maker/Pantheon/blob/main/packages/pantheon-core/src/pantheon/types/persona.py).
-Concrete examples live in
-[`packages/pantheon-core/personas/`](https://github.com/gibroughtta-maker/Pantheon/tree/main/packages/pantheon-core/personas).
+见 [`pantheon.types.persona.PersonaSpec`](https://github.com/gibroughtta-maker/Pantheon/blob/main/packages/pantheon-core/src/pantheon/types/persona.py)。
+具体例子在
+[`packages/pantheon-core/personas/`](https://github.com/gibroughtta-maker/Pantheon/tree/main/packages/pantheon-core/personas)。
 
 ## Verdict schema (v1.0)
 
-See [`pantheon.types.verdict.Verdict`](https://github.com/gibroughtta-maker/Pantheon/blob/main/packages/pantheon-core/src/pantheon/types/verdict.py).
-Every field validated by Pydantic; `verdict.no_consensus=True` is a
-first-class outcome (the framework will not strain to produce a
-fake consensus).
+见 [`pantheon.types.verdict.Verdict`](https://github.com/gibroughtta-maker/Pantheon/blob/main/packages/pantheon-core/src/pantheon/types/verdict.py)。
+所有字段 Pydantic 校验；`verdict.no_consensus=True` 是一等结果——
+框架不会强行造一个假共识。
 
-## Streaming events
+## 流式事件
 
-| Event | Fields |
+| 事件 | 字段 |
 |---|---|
 | `SpeechEvent` | seat, persona_id, phase, text, model_id |
 | `PhaseBoundaryEvent` | from_phase, to_phase |
@@ -23,36 +22,36 @@ fake consensus).
 | `SystemEvent` | role (moderator/oracle/auditor/framework), message |
 | `VerdictEvent` | debate_id |
 
-All events carry `session_id` and a monotonic `seq`.
+每个事件都带 `session_id` 和单调递增的 `seq`。
 
-## Gateways
+## Gateway
 
-| Gateway | When to use |
+| Gateway | 何时用 |
 |---|---|
-| `MockGateway` | Tests, demos, replay fallback |
-| `ReplayGateway` | Reproduce a recorded debate at zero cost |
-| `OpenAICompatibleGateway` | Generic; OpenAI / DeepSeek / vLLM / etc. |
-| `OpenClawGateway` | OpenClaw multi-LLM router |
-| `NimGateway` | NVIDIA NIM endpoints |
+| `MockGateway` | 测试、demo、replay 兜底 |
+| `ReplayGateway` | 零成本重放某场录制的辩论 |
+| `OpenAICompatibleGateway` | 通用；OpenAI / DeepSeek / vLLM 等 |
+| `OpenClawGateway` | OpenClaw 多 LLM 路由 |
+| `NimGateway` | NVIDIA NIM endpoint |
 
 ## Memory
 
-| Store | Backend | Lifetime |
+| Store | 后端 | 生命周期 |
 |---|---|---|
-| `EmbeddedCorpusStore` | in-memory hybrid embedding + BM25 | Process |
-| `NullCorpusStore` | none | n/a |
-| `SqliteEpisodicStore` | SQLite | Permanent (clearable) |
-| `NullEpisodicStore` | none | n/a |
-| `WorkingMemory` | in-process | One debate |
+| `EmbeddedCorpusStore` | in-memory hybrid embedding + BM25 | 进程 |
+| `NullCorpusStore` | 无 | n/a |
+| `SqliteEpisodicStore` | SQLite | 永久（可清空） |
+| `NullEpisodicStore` | 无 | n/a |
+| `WorkingMemory` | 进程内 | 一场辩论 |
 
-## Roles (system agents — never seated)
+## 系统角色（不占席位）
 
-- `Moderator` — phase shepherd; soft-consensus detection
-- `Oracle` — final verdict synthesis (M0 heuristic; M1+ adds LLM pass)
-- `Auditor` — claim grounding via corpus retrieval
-- `DevilsAdvocate` — single-turn challenger when consensus detected
+- `Moderator` — phase 推进；soft-consensus 检测
+- `Oracle` — 终裁 verdict；M0 启发式，M1+ 加 LLM pass
+- `Auditor` — claim grounding，通过 corpus 检索
+- `DevilsAdvocate` — 共识检测后的单轮 challenger
 
-## Plan reference
+## Plan 链接
 
-The full v0.3 production-grade plan with status markers is at
-[`docs/spec/plan.md`](https://github.com/gibroughtta-maker/Pantheon/blob/main/docs/spec/plan.md).
+完整 v0.3 生产级方案带状态标记见
+[`docs/spec/plan.md`](https://github.com/gibroughtta-maker/Pantheon/blob/main/docs/spec/plan.md)。

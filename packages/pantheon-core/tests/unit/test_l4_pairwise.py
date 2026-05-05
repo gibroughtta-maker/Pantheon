@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon import MockGateway, Model, ScriptedReply, registry
 from pantheon.calibration.l4_pairwise import (
     _anchor_to_unit,

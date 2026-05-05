@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon import Pantheon, registry
 from pantheon.types.events import PhaseBoundaryEvent, SwapEvent
 

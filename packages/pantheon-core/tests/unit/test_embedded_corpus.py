@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon.memory.embedded_corpus import (
     EmbeddedCorpusStore,
     HashEmbedder,

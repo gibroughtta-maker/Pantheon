@@ -59,7 +59,7 @@ async def test_contextualize_strict_mode_skips_llm(pd):
 
 @pytest.mark.asyncio
 async def test_contextualize_uses_judge(pd):
-    from pantheon import Model, MockGateway, ScriptedReply
+    from pantheon import MockGateway, Model, ScriptedReply
     gw = MockGateway()
     gw.add_reply(ScriptedReply(
         text="The Army hexagram, when seeded with this question, suggests preparation. "

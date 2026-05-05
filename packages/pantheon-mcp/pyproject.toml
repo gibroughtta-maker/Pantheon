@@ -14,7 +14,13 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gibroughtta-maker/Pantheon"
+Documentation = "https://gibroughtta-maker.github.io/Pantheon/mcp/"
+Issues = "https://github.com/gibroughtta-maker/Pantheon/issues"
 dependencies = [
     "pantheon-debate>=0.1.0a0",
     "mcp>=1.0",

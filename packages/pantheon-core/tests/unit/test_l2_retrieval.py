@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon.calibration.l2_retrieval import score_l2
 from pantheon.calibration.probes import DIMENSIONS, load_probes
 from pantheon.memory.corpus import NullCorpusStore

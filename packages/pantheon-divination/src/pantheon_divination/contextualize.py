@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from pantheon_divination.types import DivinationResult
 
-
 _PROMPT = """\
 You are interpreting a divination result for a user. The canonical
 output is fixed; do NOT invent oracular text, do NOT add card or

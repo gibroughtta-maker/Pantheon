@@ -40,7 +40,6 @@ from pantheon.types.persona import (
     PersonaSpec,
 )
 
-
 _DEVIL_ADVOCATE_PROMPT = """\
 You are the Devil's Advocate — a challenger summoned by the moderator
 because the seated personas have started to converge. Your one job for

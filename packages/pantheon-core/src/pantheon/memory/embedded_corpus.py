@@ -22,12 +22,11 @@ import re
 import struct
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Protocol
 
 import yaml
 
-from pantheon.memory.corpus import CorpusStore, RetrievalHit
-
+from pantheon.memory.corpus import RetrievalHit
 
 # ============================================================================
 # Embedder Protocol + implementations

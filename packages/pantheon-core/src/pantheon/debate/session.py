@@ -35,7 +35,6 @@ from pantheon.roles.oracle import Oracle
 from pantheon.types.events import (
     DebateEvent,
     PhaseBoundaryEvent,
-    SpeechEvent,
     SwapEvent,
     SystemEvent,
     VerdictEvent,
@@ -74,6 +73,13 @@ class Session:
     _seq: int = 0
     _verdict: Verdict | None = None
     _trace_id: str = ""
+    # Resume state (M-release): when BudgetExceeded fires we stash the ctx
+    # and the synthesis-loop counter so a subsequent `resume(new_budget)`
+    # can pick up without redoing earlier phases.
+    _completed_phases: set = field(default_factory=set)
+    _synthesis_round_done: int = 0
+    _ctx_snapshot: object | None = None
+    _resumable: bool = False
     _cost: CostBreakdown = field(default_factory=CostBreakdown)
     _model_calls: int = 0
     _started_at: float = 0.0
@@ -296,7 +302,220 @@ class Session:
                 completion_tokens=result.completion_tokens,
             )
 
+    async def _render_verdict_safely(
+        self,
+        *,
+        ctx: PhaseContext,
+        weights: dict[int, float],
+        duration_ms: int,
+        soft_consensus: bool,
+    ) -> Verdict:
+        """Try Oracle.render_verdict; fall back to a rule-based degraded
+        verdict if it raises (plan §8.3 row 4).
+
+        The fallback walks the existing transcripts, takes the
+        highest-weighted seat's last speech as the consensus statement,
+        and marks `consensus_robustness="low"` + flags the failure in
+        `quality.persona_swap_warnings`. The verdict is still well-formed
+        so consumers see a Verdict instance, never None.
+        """
+        try:
+            return await self.oracle.render_verdict(
+                session_id=self.session_id,
+                debate_id=self.debate_id,
+                question=self.question,
+                agents=self.agents,
+                weights=weights,
+                ctx=ctx,
+                topic_tags=self.topic_tags,
+                relay_log=self._relay_log,
+                swap_warnings=self._swap_warnings,
+                trace_id=self._trace_id,
+                cost=self._cost,
+                duration_ms=duration_ms,
+                model_calls=self._model_calls,
+                soft_consensus=soft_consensus,
+                devil_advocate_invoked=self._devil_advocate_invoked,
+            )
+        except Exception as e:  # noqa: BLE001 — degraded fallback path
+            await self._emit(
+                SystemEvent(
+                    session_id=self.session_id,
+                    seq=0,
+                    role="framework",
+                    message=f"Oracle failed ({e!r}); producing degraded_verdict.",
+                )
+            )
+            return self._degraded_verdict(
+                ctx=ctx, weights=weights, duration_ms=duration_ms,
+                error=str(e),
+            )
+
+    def _degraded_verdict(
+        self,
+        *,
+        ctx: PhaseContext,
+        weights: dict[int, float],
+        duration_ms: int,
+        error: str,
+    ) -> Verdict:
+        """Pure-Python rule-based verdict — used when Oracle fails."""
+        from pantheon.types.verdict import (
+            ConsensusPoint,
+            MinorityPoint,
+            QualityMetrics,
+            SpeakerSummary,
+        )
+
+        speaker_summary: list[SpeakerSummary] = []
+        consensus: list[ConsensusPoint] = []
+        minority: list[MinorityPoint] = []
+        ranked = sorted(
+            ((ag, weights.get(ag.seat, 0.0)) for ag in self.agents),
+            key=lambda x: -x[1],
+        )
+        for ag, w in ranked:
+            speeches = ctx.transcripts.get(ag.seat, [])
+            speaker_summary.append(
+                SpeakerSummary(
+                    seat=ag.seat,
+                    persona_id=ag.persona.id,
+                    weight=round(w, 4),
+                    speech_count=len(speeches),
+                    avg_grounding=0.0,
+                )
+            )
+        if ranked:
+            top_ag, top_w = ranked[0]
+            top_speeches = ctx.transcripts.get(top_ag.seat, [])
+            if top_speeches:
+                consensus.append(
+                    ConsensusPoint(
+                        statement=top_speeches[-1][:400].strip(),
+                        supporters=[top_ag.label],
+                        weight=round(top_w, 4),
+                    )
+                )
+            for ag, w in ranked[1:]:
+                sps = ctx.transcripts.get(ag.seat, [])
+                if sps:
+                    minority.append(
+                        MinorityPoint(
+                            statement=sps[-1][:300].strip(),
+                            holder=ag.label,
+                            rationale="Carried into the rule-based fallback.",
+                        )
+                    )
+        quality = QualityMetrics(
+            avg_grounding_score=0.0,
+            unverified_quote_count=0,
+            devil_advocate_invoked=self._devil_advocate_invoked,
+            persona_swap_warnings=self._swap_warnings + [f"oracle_failed: {error[:200]}"],
+        )
+        return Verdict(
+            session_id=self.session_id,
+            debate_id=self.debate_id,
+            question=self.question,
+            topic_tags=self.topic_tags,
+            consensus=consensus,
+            minority_opinion=minority,
+            action_items=None,
+            speaker_summary=speaker_summary,
+            persona_relay_log=self._relay_log,
+            quality=quality,
+            no_consensus=False,
+            consensus_robustness="low",
+            trace_id=self._trace_id,
+            cost=self._cost,
+            duration_ms=duration_ms,
+            model_calls=self._model_calls,
+        )
+
     async def _summon_devil_advocate(self, ctx: PhaseContext) -> None:
+        """Spawn the Devil's Advocate for one turn during synthesis."""
+        from pantheon.roles.devil_advocate import DevilsAdvocate
+
+        await self._emit(
+            SystemEvent(
+                session_id=self.session_id,
+                seq=0,
+                role="moderator",
+                message="Soft consensus detected — summoning Devil's Advocate.",
+            )
+        )
+        gateway = self.agents[0].model.gateway
+        seat_labels = {a.seat: a.label for a in self.agents}
+        try:
+            self.budget.check()
+            da = DevilsAdvocate()
+            text = await da.challenge(
+                gateway,
+                seated_transcripts=ctx.transcripts,
+                agents_label=seat_labels,
+                question=self.question,
+                seed=self.seed,
+            )
+        except Exception as e:  # noqa: BLE001
+            await self._emit(
+                SystemEvent(
+                    session_id=self.session_id,
+                    seq=0,
+                    role="framework",
+                    message=f"Devil's Advocate failed ({e!r}); continuing without it.",
+                )
+            )
+            return
+
+        from pantheon.types.verdict import Claim
+
+        ctx.claims.append(
+            Claim(
+                claim_id=f"da{len(ctx.claims) + 1}",
+                speaker="devil_advocate",
+                text=text[:500],
+                type="speculation",
+                grounding_score=0.5,
+                grounding_tag="no_corpus",
+            )
+        )
+        await self._emit(
+            SystemEvent(
+                session_id=self.session_id,
+                seq=0,
+                role="moderator",
+                message=f"[Devil's Advocate] {text}",
+            )
+        )
+
+    async def resume(self, budget: BudgetGuard | None = None) -> Session:
+        """Continue a debate after a `BudgetExceeded` degrade.
+
+        The previous run's `PhaseContext`, completed-phase set, and
+        synthesis-round counter are preserved so resume picks up exactly
+        where it stopped. A fresh ``BudgetGuard`` may be supplied; if
+        not, the existing one is reset.
+
+        Returns ``self`` so callers can chain ``await session.resume(...).run()``.
+        """
+        if not self._resumable:
+            raise RuntimeError(
+                "Session is not in a resumable state; "
+                "resume() is only valid after BudgetExceeded."
+            )
+        self._resumable = False
+        self._consumed = False
+        self._events = asyncio.Queue()
+        self.budget = budget or self.budget
+        self.budget.reset()
+        # Walk the FSM marker to the highest completed phase so the next
+        # _transition() call (from _run) is legal.
+        for ph in (Phase.SYNTHESIS, Phase.REBUTTAL, Phase.CROSS_EXAM, Phase.OPENING):
+            if ph in self._completed_phases:
+                self._phase = ph
+                break
+        else:
+            self._phase = Phase.CREATED
+        return self
         """Spawn the Devil's Advocate for one turn during synthesis.
 
         The advocate is **not** seated, gets a single speech recorded as
@@ -363,26 +582,56 @@ class Session:
         )
 
     async def _run(self) -> None:
-        self._started_at = time.monotonic()
-        ctx = PhaseContext(
-            session_id=self.session_id,
-            question=self.question,
-            rounds_remaining=self.rounds,
-        )
+        if self._started_at == 0.0:
+            self._started_at = time.monotonic()
+        # Restore from snapshot when resuming after a BudgetExceeded, else
+        # build a fresh PhaseContext.
+        ctx: PhaseContext
+        if self._ctx_snapshot is not None:
+            ctx = self._ctx_snapshot  # type: ignore[assignment]
+            self._ctx_snapshot = None
+            await self._emit(
+                SystemEvent(
+                    session_id=self.session_id, seq=0, role="framework",
+                    message=(
+                        f"resuming from phase {self._phase.value!r} "
+                        f"with {len(self._completed_phases)} completed phases"
+                    ),
+                )
+            )
+            # Walk DEGRADED back to where we were; the FSM allows it via
+            # is_legal because we just don't transition in that case.
+            self._phase = Phase.REBUTTAL if Phase.REBUTTAL in self._completed_phases \
+                else (Phase.CROSS_EXAM if Phase.CROSS_EXAM in self._completed_phases
+                      else (Phase.OPENING if Phase.OPENING in self._completed_phases
+                            else Phase.CREATED))
+        else:
+            ctx = PhaseContext(
+                session_id=self.session_id,
+                question=self.question,
+                rounds_remaining=self.rounds,
+            )
         try:
-            await self._transition(Phase.OPENING)
-            await self._run_phase_strategy(OpeningPhase(), ctx, "opening")
+            if Phase.OPENING not in self._completed_phases:
+                await self._transition(Phase.OPENING)
+                await self._run_phase_strategy(OpeningPhase(), ctx, "opening")
+                self._completed_phases.add(Phase.OPENING)
 
-            await self._transition(Phase.CROSS_EXAM)
-            await self._run_phase_strategy(CrossExamPhase(), ctx, "cross_exam")
+            if Phase.CROSS_EXAM not in self._completed_phases:
+                await self._transition(Phase.CROSS_EXAM)
+                await self._run_phase_strategy(CrossExamPhase(), ctx, "cross_exam")
+                self._completed_phases.add(Phase.CROSS_EXAM)
 
-            await self._transition(Phase.REBUTTAL)
-            await self._run_phase_strategy(RebuttalPhase(), ctx, "rebuttal")
+            if Phase.REBUTTAL not in self._completed_phases:
+                await self._transition(Phase.REBUTTAL)
+                await self._run_phase_strategy(RebuttalPhase(), ctx, "rebuttal")
+                self._completed_phases.add(Phase.REBUTTAL)
 
-            # Synthesis loop
+            # Synthesis loop — synthesis_round_done persists across resume.
             soft = self.moderator.soft_consensus(ctx)
-            for r in range(max(0, self.rounds - 2)):
-                ctx.rounds_remaining = self.rounds - 2 - r
+            total_synth_rounds = max(0, self.rounds - 2)
+            for r in range(self._synthesis_round_done, total_synth_rounds):
+                ctx.rounds_remaining = total_synth_rounds - r
                 await self._transition(Phase.SYNTHESIS)
                 summary = await self.moderator.summarize(ctx)
                 await self._emit(
@@ -398,40 +647,35 @@ class Session:
                     self._devil_advocate_invoked = True
                     await self._summon_devil_advocate(ctx)
                 await self._run_phase_strategy(SynthesisPhase(summary), ctx, "synthesis")
+                self._synthesis_round_done = r + 1
 
-            await self._transition(Phase.VERDICT)
+            if Phase.VERDICT not in self._completed_phases:
+                await self._transition(Phase.VERDICT)
             weights = compute_weights(
                 self.agents, self.topic_tags, user_prefs=self.user_weights
             )
             duration_ms = int((time.monotonic() - self._started_at) * 1000)
-            self._verdict = await self.oracle.render_verdict(
-                session_id=self.session_id,
-                debate_id=self.debate_id,
-                question=self.question,
-                agents=self.agents,
-                weights=weights,
+            self._verdict = await self._render_verdict_safely(
                 ctx=ctx,
-                topic_tags=self.topic_tags,
-                relay_log=self._relay_log,
-                swap_warnings=self._swap_warnings,
-                trace_id=self._trace_id,
-                cost=self._cost,
+                weights=weights,
                 duration_ms=duration_ms,
-                model_calls=self._model_calls,
                 soft_consensus=soft,
-                devil_advocate_invoked=self._devil_advocate_invoked,
             )
+            self._completed_phases.add(Phase.VERDICT)
             await self._emit(
                 VerdictEvent(
                     session_id=self.session_id,
-                    seq=0,  # set in _emit
+                    seq=0,
                     debate_id=self.debate_id,
                 )
             )
             if self.recorder is not None:
                 self.recorder.write("verdict", verdict=self._verdict)
             await self._transition(Phase.CLOSED)
+            self._completed_phases.add(Phase.CLOSED)
         except BudgetExceeded as e:
+            self._resumable = True
+            self._ctx_snapshot = ctx
             await self._degrade(f"budget exceeded: {e}")
         except Exception as e:  # noqa: BLE001 — top-level supervisor
             await self._degrade(f"unhandled error: {e!r}")

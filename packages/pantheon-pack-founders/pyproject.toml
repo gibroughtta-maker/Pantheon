@@ -14,10 +14,16 @@ keywords = ["pantheon", "persona-pack", "religious-figures"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: Apache Software License",
+    "Typing :: Typed",
 ]
 dependencies = [
     "pantheon-debate>=0.1.0a0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gibroughtta-maker/Pantheon"
+Issues = "https://github.com/gibroughtta-maker/Pantheon/issues"
+Audit = "https://github.com/gibroughtta-maker/Pantheon/blob/main/packages/pantheon-pack-founders/AUDIT.md"
 
 [project.entry-points."pantheon.personas"]
 founders = "pantheon_pack_founders:provide_personas"

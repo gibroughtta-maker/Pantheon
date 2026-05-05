@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import os
 
-from pantheon_divination.types import DivinationResult, DivinationLine, FormatHelpers
+from pantheon_divination.types import DivinationLine, DivinationResult, FormatHelpers
 
 _DISCLAIMER_ACCEPTED = False
 

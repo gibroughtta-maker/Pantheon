@@ -16,7 +16,7 @@ import hashlib
 import random
 
 from pantheon_divination import _ensure_accepted
-from pantheon_divination.iching.data import Hexagram, hexagram_by_lines, load_hexagrams
+from pantheon_divination.iching.data import Hexagram, hexagram_by_lines
 from pantheon_divination.types import DivinationLine, DivinationResult, FormatHelpers
 
 
@@ -38,7 +38,7 @@ _LINE_NAMES_EN = ["Initial", "Second", "Third", "Fourth", "Fifth", "Top"]
 def _seed_for(question: str, seed: int) -> int:
     """Combine question and seed into a single 64-bit RNG seed.
     Pure function — deterministic and side-effect-free."""
-    h = hashlib.sha256(f"{seed}|{question}".encode("utf-8")).digest()
+    h = hashlib.sha256(f"{seed}|{question}".encode()).digest()
     return int.from_bytes(h[:8], "big")
 
 

@@ -8,8 +8,9 @@ coordinator's job at phase boundaries.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from typing import AsyncIterator, Protocol
+from typing import Protocol
 
 from pantheon.core.agent import Agent
 from pantheon.types.events import SpeechEvent

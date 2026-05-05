@@ -1,8 +1,6 @@
 """Persona pack entry-point auto-discovery."""
 from __future__ import annotations
 
-import pytest
-
 from pantheon.core.persona import registry
 
 
@@ -34,6 +32,7 @@ def test_founders_pack_not_loaded_until_disclaimer():
 
 def test_founders_pack_appears_after_disclaimer():
     import importlib
+
     import pantheon_pack_founders
     importlib.reload(pantheon_pack_founders)
     pantheon_pack_founders.accept_disclaimer()

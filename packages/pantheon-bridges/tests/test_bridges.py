@@ -3,8 +3,7 @@ isolates per-sink failures; protocol satisfied by all sinks."""
 from __future__ import annotations
 
 import pytest
-
-from pantheon import MockGateway, Pantheon, ScriptedReply
+from pantheon import MockGateway, Pantheon
 from pantheon_bridges import EventSink, pipe
 from pantheon_bridges.discord import DiscordSink
 from pantheon_bridges.obsidian import ObsidianSink

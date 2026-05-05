@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pantheon.debate.fsm import Phase, is_legal
 
 

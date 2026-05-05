@@ -1,20 +1,20 @@
-# Quickstart
+# 快速开始
 
-## Install
+## 安装
 
 ```bash
 pip install pantheon-debate
 ```
 
-For the MCP server (so any MCP-aware client can use it):
+如果想让任意 MCP 客户端用上 Pantheon：
 
 ```bash
 pip install pantheon-mcp
-# or no-install via uvx:
+# 或不安装直接通过 uvx 跑：
 uvx pantheon-mcp
 ```
 
-## Run a debate (Python SDK)
+## 跑一场辩论（Python SDK）
 
 ```python
 import asyncio
@@ -23,9 +23,9 @@ from pantheon import Pantheon, MockGateway
 async def main():
     p = Pantheon.summon(
         ["confucius", "socrates", "naval"],
-        gateway=MockGateway(),  # zero-cost demo
+        gateway=MockGateway(),  # 零成本 demo
     )
-    sess = p.debate("Should I quit my job?", rounds=3, seed=42)
+    sess = p.debate("我应该辞职吗？", rounds=3, seed=42)
     async for ev in sess.stream():
         print(ev)
     v = await sess.verdict()
@@ -34,17 +34,17 @@ async def main():
 asyncio.run(main())
 ```
 
-## Run via CLI
+## CLI 使用
 
 ```bash
 pantheon list-personas
-pantheon debate confucius socrates naval -q "Is moderation a virtue?"
+pantheon debate confucius socrates naval -q "节制是美德还是缺陷?"
 pantheon replay <debate_id>
 ```
 
-## Run via MCP
+## 通过 MCP
 
-Add to your MCP client config (e.g. Claude Desktop):
+把下面这段加到你的 MCP 客户端配置（如 Claude Desktop）：
 
 ```jsonc
 {
@@ -57,15 +57,13 @@ Add to your MCP client config (e.g. Claude Desktop):
 }
 ```
 
-Then in the client: "summon confucius and naval to debate whether I should
-take the job offer". The 8 tools (`summon`, `debate`, `swap_persona`,
-`swap_model`, `get_verdict`, `list_personas`, `audit_persona`,
-`cast_divination`) are the contract — anything that speaks MCP can use
-them.
+然后在客户端里："召唤孔子和纳瓦尔来辩论我应不应该接这份工作。"
+8 个 tool（`summon` / `debate` / `swap_persona` / `swap_model` /
+`get_verdict` / `list_personas` / `audit_persona` / `cast_divination`）
+就是契约——任何会说 MCP 的客户端都能用。
 
-## Plug in real models
+## 接入真模型
 
-Set `PANTHEON_GATEWAY=openclaw` and provide `OPENCLAW_BASE_URL` +
-`OPENCLAW_API_KEY` to route through OpenClaw's multi-LLM gateway.
-Or use `OpenClawGateway`, `NimGateway`, or `OpenAICompatibleGateway`
-directly from the SDK.
+设 `PANTHEON_GATEWAY=openclaw` 并提供 `OPENCLAW_BASE_URL` +
+`OPENCLAW_API_KEY` 就能让 OpenClaw 多 LLM gateway 路由。也可以直接
+用 SDK 里的 `OpenClawGateway` / `NimGateway` / `OpenAICompatibleGateway`。

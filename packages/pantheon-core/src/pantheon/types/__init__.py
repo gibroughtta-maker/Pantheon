@@ -14,8 +14,8 @@ from pantheon.types.persona import (
     DebateStyle,
     ManualOverride,
     ModelPreference,
-    PersonaSpec,
     Personality,
+    PersonaSpec,
     Relations,
 )
 from pantheon.types.verdict import (

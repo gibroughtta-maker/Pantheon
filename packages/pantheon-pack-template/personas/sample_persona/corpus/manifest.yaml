@@ -1,0 +1,16 @@
+schema_version: "1.0"
+persona: sample_persona
+notes: |
+  Replace with your persona's corpus sources. Public-domain content
+  preferred; CC-BY-* acceptable for academic-source translations.
+
+sources:
+  - id: example_source_1
+    path: example_source_1.txt
+    source: "Title of the work, translator (year)"
+    license: "Public Domain"
+    language: en
+    upstream:
+      - https://example.com/source1
+    sha256: ""              # populated by `pantheon corpus fetch` after verify
+    max_size_kb: 1500

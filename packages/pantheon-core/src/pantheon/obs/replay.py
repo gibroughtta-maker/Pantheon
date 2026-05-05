@@ -14,7 +14,7 @@ import hashlib
 import json
 import os
 from dataclasses import asdict, is_dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -75,7 +75,7 @@ class Recorder:
             self._open()
         row = {
             "event": event,
-            "ts": datetime.now(timezone.utc).isoformat(),
+            "ts": datetime.now(UTC).isoformat(),
             **_to_jsonable(fields),
         }
         self._fh.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -103,7 +103,7 @@ class Recorder:
             self._fh.close()
             self._fh = None
 
-    def __enter__(self) -> "Recorder":
+    def __enter__(self) -> Recorder:
         return self
 
     def __exit__(self, *exc) -> None:

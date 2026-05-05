@@ -1,0 +1,66 @@
+schema_version: "1.0"
+id: sample_persona
+display:
+  en: Sample Persona
+  zh: 示例 persona
+era: "(your time period)"
+school: "(your tradition / school of thought)"
+language_preference: [en, zh]
+
+personality:
+  core_values: [example_value_1, example_value_2]
+  rhetorical_style: "(how the persona speaks: terse / aphoristic / dialectical / ...)"
+  catchphrases:
+    - "Sample catchphrase one."
+    - "Sample catchphrase two."
+
+# 7-dim skill vector. Hand-fill 0.0–1.0 for now; calibrate later via:
+#   pantheon persona calibrate sample_persona --anchors confucius,socrates,naval
+skills:
+  ethics: 0.50
+  governance: 0.50
+  education: 0.50
+  business: 0.50
+  technology: 0.50
+  divination: 0.50
+  emotion: 0.50
+
+debate_style:
+  aggression: 0.40
+  yielding: 0.40
+  citation_density: 0.40
+
+model_preference:
+  primary: claude-opus-4-7
+  fallback: gpt-4o
+  forbidden: []
+
+corpus:
+  sources:
+    - { path: "corpus/manifest.yaml", weight: 1.0, license: "Public Domain" }
+  retrieval:
+    top_k: 4
+    min_score: 0.45
+  quote_policy: "verbatim_or_paraphrase"
+
+audit:
+  reviewed_by: []                        # fill with your three reviewers
+  cultural_sensitivity_score: null       # filled after audit panel scores
+  last_audit: null
+  known_biases:
+    - "REQUIRED: at least three honest, specific biases. Audit gate enforces this."
+  calibration:
+    method: hand_filled
+    run_id: null
+    judges: []
+    anchors_used: []
+    sigma_per_dim: {}
+    manual_overrides: {}
+
+relations:
+  contemporaries: []
+  opponents: []
+  successors: []
+
+system_prompt_file: prompt.md
+historical_sources: []

@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pantheon.types.events import (
@@ -32,7 +32,7 @@ class ObsidianSink:
     _events: list[str] = field(default_factory=list, init=False)
     _question: str = field(default="", init=False)
     _started_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc), init=False,
+        default_factory=lambda: datetime.now(UTC), init=False,
     )
 
     async def handle(self, event) -> None:

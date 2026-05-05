@@ -23,7 +23,7 @@ from pathlib import Path
 
 from pantheon.core.agent import Agent
 from pantheon.core.model import Model
-from pantheon.core.persona import Persona, registry as global_registry
+from pantheon.core.persona import registry as global_registry
 from pantheon.debate.session import Session, make_debate_id
 from pantheon.gateway.base import Gateway
 from pantheon.gateway.mock import MockGateway
@@ -59,7 +59,7 @@ class Pantheon:
         gateway: Gateway | None = None,
         default_model: str | None = None,
         budget: BudgetGuard | None = None,
-    ) -> "Pantheon":
+    ) -> Pantheon:
         """Convenience: build a Pantheon and add one Agent per persona id.
         Each persona's `model_preference.primary` is used unless overridden."""
         p = cls(
